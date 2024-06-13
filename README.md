@@ -32,6 +32,9 @@ Chaque livre doit avoir les champs suivants :
 - Année de publication
 - Genre
 - Résumé
+- Statut (emprunté ou disponible)
+- Date de dernière mise à jour
+- Nombre de pages
 
 ## Gestion des utilisateurs
 - Inscription d'un nouvel utilisateur (POST)
@@ -52,6 +55,7 @@ Chaque utilisateur doit avoir les champs suivants :
 - Prénom
 - Email
 - Mot de passe
+- Statut (a actuellement un livre emprunté ou non)
 
 ## Gestion des emprunts
 - Un utilisateur peut emprunter un livre (POST)
@@ -67,3 +71,12 @@ Chaque utilisateur doit avoir les champs suivants :
 
 - Récupération de tous les livres actuellement empruntés par un utilisateur spécifique (GET)
 - Récupération de tous les utilisateurs qui ont actuellement emprunté un livre spécifique (GET)
+
+Chaque emprunt doit avoir les champs suivants :
+- ID
+- ID de l'utilisateur
+- ID du livre
+- Date de début de l'emprunt
+- Date de fin de l'emprunt
+- Statut de l'emprunt (actif ou terminé)
+- Statut du livre rendu (endommagé ou non)
