@@ -1,30 +1,37 @@
 package org.books.api.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
 @Data
+@Entity
 public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    public String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private String id;
 
-    public String title;
+    private String title;
 
-    public String author;
+    private String author;
 
     @Column(name = "year_of_publication")
-    public String yearOfPublication;
+    private String yearOfPublication;
 
     @Column(name = "book_genre")
-    public String genre;
+    private String genre;
 
-    public String summary;
+    private String summary;
 
     @Column(name = "page_count")
-    public int pageCount;
+    private int pageCount;
+
+    public Book(String title, String author, String yearOfPublication, String genre, String summary, int pageCount) {
+        this.title = title;
+        this.author = author;
+        this.yearOfPublication = yearOfPublication;
+        this.genre = genre;
+        this.summary = summary;
+        this.pageCount = pageCount;
+    }
 }
