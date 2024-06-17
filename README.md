@@ -32,7 +32,6 @@ Chaque livre doit avoir les champs suivants :
 - Année de publication
 - Genre
 - Résumé
-- Statut (emprunté ou disponible)
 - Date de dernière mise à jour
 - Nombre de pages
 
