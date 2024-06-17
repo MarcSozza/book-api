@@ -54,7 +54,6 @@ Chaque utilisateur doit avoir les champs suivants :
 - Prénom
 - Email
 - Mot de passe
-- Statut (a actuellement un livre emprunté ou non)
 
 ## Gestion des emprunts
 - Un utilisateur peut emprunter un livre (POST)
