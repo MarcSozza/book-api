@@ -41,7 +41,7 @@ public class BookServiceUtilsTest {
         @Test
         @DisplayName("Si aucun livre n'est trouvé alors renvoie faux")
         @Timeout(1)
-        public void givenUnknownBookShouldReturlFalseWhenNotInTheList() {
+        void givenUnknownBookShouldReturlFalseWhenNotInTheList() {
             Book bookToAdd = new Book("loul", "unknown author", "2006", "peur", "description", 586);
             boolean result = bookServiceUtils.isAlreadyKnown(bookToAdd, books);
             assertThat(result).isFalse();
@@ -50,7 +50,7 @@ public class BookServiceUtilsTest {
         @Test
         @DisplayName("S'il y a uniquement un livre qui à le même auteur que le livre à ajouter, alors renvoie faux")
         @Timeout(1)
-        public void givenUnknownBookShoulReturnFalseWhenThereIsOnlyABookWithSameAuteur() {
+        void givenUnknownBookShoulReturnFalseWhenThereIsOnlyABookWithSameAuteur() {
             Book bookToAdd = new Book("Test", "Stephen King", "1986", "thriller", "description", 456);
             boolean result = bookServiceUtils.isAlreadyKnown(bookToAdd, books);
             assertThat(result).isFalse();
@@ -59,7 +59,7 @@ public class BookServiceUtilsTest {
         @Test
         @DisplayName("S'il y a uniqument un livre qui à le même titre que le livre à ajouter, alors renvoie faux")
         @Timeout(1)
-        public void givenUnknownBookShouldReturnFalseWhenThereIsOnlyABookWithSameTitle() {
+        void givenUnknownBookShouldReturnFalseWhenThereIsOnlyABookWithSameTitle() {
             Book bookToAdd = new Book("Titre 1", "test test", "2006", "peur", "description", 586);
             boolean result = bookServiceUtils.isAlreadyKnown(bookToAdd, books);
             assertThat(result).isFalse();
@@ -68,10 +68,19 @@ public class BookServiceUtilsTest {
         @Test
         @DisplayName("S'il y a uniquement un livre qui à le même auteur et le même titre que le livre à ajouter alors renvoie vrai")
         @Timeout(1)
-        public void givenKnownBookShouldReturnTrueWhenNotInTheList() {
+        void givenKnownBookShouldReturnTrueWhenNotInTheList() {
             Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", 452);
             boolean result = bookServiceUtils.isAlreadyKnown(bookToAdd, books);
             assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Si la liste est vide, alors renvoie faux")
+        void givenBookShouldReturnTrueWhenEmptyList() {
+            ArrayList<Book> emptyList = new ArrayList<>();
+            Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", 452);
+            boolean result = bookServiceUtils.isAlreadyKnown(bookToAdd, emptyList);
+            assertThat(result).isFalse();
         }
     }
 }

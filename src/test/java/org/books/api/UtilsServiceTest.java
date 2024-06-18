@@ -24,13 +24,13 @@ public class UtilsServiceTest {
     @Tag("replace_accent_test")
     @DisplayName("Test de la fonction replaceAccent")
     class ReplaceAccent {
-        @ParameterizedTest(name="doit remplacer l'accent dans le paramètre d'entrée {0} et le résultat doit être {1}")
+        @ParameterizedTest(name = "doit remplacer l'accent dans le paramètre d'entrée {0} et le résultat doit être {1}")
         @CsvSource({
                 "'épine', 'epine'",
                 "'Éric', 'Eric'",
                 "'arrêt', 'arret'"
         })
-        public void givenTextShouldReplaceAccentAigu(String value, String expectedResult) {
+        void givenTextShouldReplaceAccentAigu(String value, String expectedResult) {
 
             String result = utilsService.replaceAccent(value);
 
@@ -40,7 +40,7 @@ public class UtilsServiceTest {
         @Test
         @Tag("replace_accent_test")
         @DisplayName("doit renvoyer le même paramètre d'entrée s'il n'y a pas d'accent")
-        public void givenTextWithoutAccentShouldReturnSameText() {
+        void givenTextWithoutAccentShouldReturnSameText() {
             String value = "texte sans accent";
             String result = utilsService.replaceAccent(value);
             assertThat(value).isEqualTo(result);
@@ -60,7 +60,7 @@ public class UtilsServiceTest {
                 "'  John Doe', 'John Doe'",
                 "'Eric Bidule', 'Éric Bidule'"
         })
-        public void givenTwoStringShouldReturnTrueIfEquals(String value, String value2) {
+        void givenTwoStringShouldReturnTrueIfEquals(String value, String value2) {
 
             boolean result = utilsService.isStringEqualIgnoreCase(value, value2);
 
@@ -70,7 +70,7 @@ public class UtilsServiceTest {
         @Test
         @Tag("same_input_value")
         @DisplayName("doit renvoyer faux si les 2 valeurs ne correspondent pas")
-        public void givenTwoStringShouldReturnFalseIfNotEquals() {
+        void givenTwoStringShouldReturnFalseIfNotEquals() {
             String value = "value";
             String value2 = "not_same_value";
 
@@ -79,7 +79,5 @@ public class UtilsServiceTest {
             assertThat(result).isFalse();
         }
     }
-
-
 
 }

@@ -2,14 +2,16 @@ package org.books.api.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@NoArgsConstructor
 public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private String id;
+    private Long id;
 
     private String title;
 
@@ -34,4 +36,5 @@ public class Book {
         this.summary = summary;
         this.pageCount = pageCount;
     }
+
 }
