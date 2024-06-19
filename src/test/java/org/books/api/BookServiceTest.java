@@ -51,6 +51,7 @@ public class BookServiceTest {
             void shoulReturnNewLivreIfLivreNotExist() {
                 when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(false);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
+                when(bookServiceUtils.isBetweenRangeAuthorized(any(Book.class))).thenReturn(true);
                 when(bookRepository.save(any(Book.class))).thenReturn(bookToAdd);
 
                 Book bookAdded = bookService.createBook(bookToAdd);
@@ -65,6 +66,7 @@ public class BookServiceTest {
                 verify(bookRepository, times(1)).save(any(Book.class));
                 verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+                verify(bookServiceUtils, times(1)).isBetweenRangeAuthorized(any(Book.class));
             }
 
             @Test
@@ -72,6 +74,7 @@ public class BookServiceTest {
             void shouldReturnErrorIfLivreAlreadyExist() {
                 when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(true);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
+                when(bookServiceUtils.isBetweenRangeAuthorized(any(Book.class))).thenReturn(true);
 
                 CustomErrorException value = assertThrows(BookAlreadyExistException.class, () -> {
                     bookService.createBook(bookToAdd);
@@ -118,6 +121,39 @@ public class BookServiceTest {
                 assertThat(result.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_NOT_EXHAUSTIVE_YEAR.getCode());
 
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+            }
+        }
+
+        @Nested
+        @Tag("verification_page_size")
+        @DisplayName("Vérification du nombre de page du livre")
+        class VerificationPageSize {
+            @Test
+            @DisplayName("Si le livre à ajouter à un nombre de page inférieur au minimum, renvoie une erreur")
+            void shouldReturnErrorIfPageSizeInferiorAtMinimum() {
+                bookToAdd.setPageCount(9);
+                when(bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd)).thenReturn(true);
+                when(bookServiceUtils.isBetweenRangeAuthorized(bookToAdd)).thenReturn(false);
+                CustomErrorException exception = assertThrows(UnexpectedNumberOfPage.class,
+                                                              () -> bookService.createBook(bookToAdd));
+                assertThat(exception.getErrorCode()).isEqualTo(
+                        ErrorCode.ERROR_CODE_UNEXPECTED_NUMBER_OF_PAGE.getCode());
+                verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+                verify(bookServiceUtils, times(1)).isBetweenRangeAuthorized(bookToAdd);
+            }
+
+            @Test
+            @DisplayName("Si le livre à ajouter à un nombre de page supérieur à la limite, renvoie une erreur")
+            void shouldReturnErrorIfPageSizeSuperiorAtMaximum() {
+                bookToAdd.setPageCount(999999);
+                when(bookServiceUtils.isBetweenRangeAuthorized(bookToAdd)).thenReturn(false);
+                when(bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd)).thenReturn(true);
+                CustomErrorException exception = assertThrows(UnexpectedNumberOfPage.class,
+                                                              () -> bookService.createBook(bookToAdd));
+                assertThat(exception.getErrorCode()).isEqualTo(
+                        ErrorCode.ERROR_CODE_UNEXPECTED_NUMBER_OF_PAGE.getCode());
+                verify(bookServiceUtils, times(1)).isBetweenRangeAuthorized(bookToAdd);
+                verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(bookToAdd);
             }
         }
 

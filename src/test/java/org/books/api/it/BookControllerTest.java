@@ -2,6 +2,7 @@ package org.books.api.it;
 
 import org.books.api.errors.BookAlreadyExistException;
 import org.books.api.errors.NotExhaustiveYear;
+import org.books.api.errors.UnexpectedNumberOfPage;
 import org.books.api.errors.YearInTheFuture;
 import org.books.api.models.Book;
 import org.books.api.services.BookService;
@@ -107,9 +108,26 @@ public class BookControllerTest {
                                                   .contentType(MediaType.APPLICATION_JSON))
                    .andExpect(status().isBadRequest());
 
-            Mockito.verify(bookService, Mockito.times(1)).createBook(invalidBook);
+            Mockito.verify(bookService, Mockito.times(1))
+                   .createBook(invalidBook);
         }
 
+        @Test
+        @DisplayName("Renvoyer une 400 si le nombre de page est inférieur à la limite")
+        void givenBookWithInvalidPageCountShouldReturn400() throws Exception {
+            bookToAdd.setPageCount(6);
+
+            Mockito.when(bookService.createBook(bookToAdd))
+                   .thenThrow(UnexpectedNumberOfPage.class);
+
+            mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
+                                                  .content(
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":6}")
+                                                  .contentType(MediaType.APPLICATION_JSON))
+                   .andExpect(status().isBadRequest());
+            Mockito.verify(bookService, Mockito.times(1))
+                   .createBook(bookToAdd);
+        }
 
     }
 }

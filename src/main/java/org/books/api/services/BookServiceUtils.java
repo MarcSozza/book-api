@@ -10,6 +10,8 @@ import java.util.List;
 @Service
 public class BookServiceUtils {
 
+    private static final int MAXIMUM = 9999;
+    private static final int MINIMUM = 10;
     private UtilsService utilsService;
 
     @Autowired
@@ -39,4 +41,7 @@ public class BookServiceUtils {
         return utilsService.isPublicationYearInPastOrPresent(yearToCheck, curentYear);
     }
 
+    public boolean isBetweenRangeAuthorized(Book bookToAdd) {
+        return bookToAdd.getPageCount() >= BookServiceUtils.MINIMUM && bookToAdd.getPageCount() <= BookServiceUtils.MAXIMUM;
+    }
 }

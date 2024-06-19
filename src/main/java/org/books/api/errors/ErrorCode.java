@@ -3,7 +3,7 @@ package org.books.api.errors;
 public enum ErrorCode {
     ERROR_CODE_BOOK_ALREADY_EXIST("0x96464"),
     ERROR_CODE_YEAR_IN_THE_FUTURE("0x75481"),
-    ERROR_CODE_NOT_EXHAUSTIVE_YEAR("0x65832");
+    ERROR_CODE_NOT_EXHAUSTIVE_YEAR("0x65832"), ERROR_CODE_UNEXPECTED_NUMBER_OF_PAGE("0x46318");
 
     private final String code;
 

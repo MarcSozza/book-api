@@ -2,6 +2,7 @@ package org.books.api.controllers;
 
 import org.books.api.errors.BookAlreadyExistException;
 import org.books.api.errors.NotExhaustiveYear;
+import org.books.api.errors.UnexpectedNumberOfPage;
 import org.books.api.errors.YearInTheFuture;
 import org.books.api.models.Book;
 import org.books.api.services.BookService;
@@ -38,6 +39,11 @@ public class BookController {
 
     @ExceptionHandler(NotExhaustiveYear.class)
     public ResponseEntity<String> handleExceptionNotExhaustiveYear(Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnexpectedNumberOfPage.class)
+    public ResponseEntity<String> handleExceptionUnexpectedNumberOfPage(Exception e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

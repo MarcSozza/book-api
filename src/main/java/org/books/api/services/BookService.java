@@ -1,6 +1,7 @@
 package org.books.api.services;
 
 import org.books.api.errors.BookAlreadyExistException;
+import org.books.api.errors.UnexpectedNumberOfPage;
 import org.books.api.errors.YearInTheFuture;
 import org.books.api.models.Book;
 import org.books.api.repositories.BookRepository;
@@ -23,17 +24,21 @@ public class BookService {
     }
 
     public Book createBook(Book book) {
-        if (bookServiceUtils.isPublicationYearInPastOrPresent(book)) {
-            List<Book> books = new ArrayList<>();
-            bookRepository.findAll()
-                          .forEach(books::add); //reviens à faire .forEach(book -> books.add(book))
-            if (bookServiceUtils.isAlreadyKnown(book, books)) {
-                throw new BookAlreadyExistException(book);
-            } else {
-                return bookRepository.save(book);
-            }
-        } else {
+        if (!bookServiceUtils.isPublicationYearInPastOrPresent(book)) {
             throw new YearInTheFuture(book);
+        }
+
+        if (!bookServiceUtils.isBetweenRangeAuthorized(book)) {
+            throw new UnexpectedNumberOfPage(book);
+        }
+
+        List<Book> books = new ArrayList<>();
+        bookRepository.findAll()
+                      .forEach(books::add); //reviens à faire .forEach(book -> books.add(book))
+        if (bookServiceUtils.isAlreadyKnown(book, books)) {
+            throw new BookAlreadyExistException(book);
+        } else {
+            return bookRepository.save(book);
         }
 
     }

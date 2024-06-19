@@ -132,4 +132,37 @@ public class BookServiceUtilsTest {
         }
     }
 
+    @Nested
+    @Tag("verification_nombre_de_page")
+    @DisplayName("Vérification du nombre de page du livre à ajouter")
+    class CheckNombreDePageDuLivre {
+
+        @Test
+        @DisplayName("Si le nombre de page est supérieur ou égale à 10 et inférieur à la limite alors renvoie vrai")
+        void shouldReturnTrueWhenNumberOfPageBetween10AndLimit() {
+            int number = 10;
+            Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", number);
+            boolean result = bookServiceUtils.isBetweenRangeAuthorized(bookToAdd);
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Si le nombre est inférieur à 10, renvoie faux")
+        void shouldReturnFalseWhenNumberOfPageInferiorAt10() {
+            int number = 2;
+            Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", number);
+            boolean result = bookServiceUtils.isBetweenRangeAuthorized(bookToAdd);
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("Si le nombre est supérieur à la limite, renvoie faux")
+        void shouldReturnFalseWhenNumberOfPageSuperiorAtLimit() {
+            int number = 10000;
+            Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", number);
+            boolean result = bookServiceUtils.isBetweenRangeAuthorized(bookToAdd);
+            assertThat(result).isFalse();
+        }
+    }
+
 }
