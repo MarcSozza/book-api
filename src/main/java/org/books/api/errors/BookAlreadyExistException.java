@@ -1,4 +1,4 @@
-package org.books.api;
+package org.books.api.errors;
 
 import org.books.api.models.Book;
 

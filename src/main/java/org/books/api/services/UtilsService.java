@@ -1,5 +1,6 @@
 package org.books.api.services;
 
+import org.books.api.errors.NotExhaustiveYear;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -18,5 +19,16 @@ public class UtilsService {
         return Normalizer
                 .normalize(text, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+    }
+
+    public boolean isPublicationYearInPastOrPresent(String yearToTest, String currentYear) {
+        try {
+            int castedYearToTest = Integer.parseInt(yearToTest);
+            int castedCurrentYear = Integer.parseInt(currentYear);
+            return castedYearToTest <= castedCurrentYear;
+        } catch (NumberFormatException e) {
+            throw new NotExhaustiveYear(yearToTest);
+        }
+
     }
 }

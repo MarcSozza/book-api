@@ -1,5 +1,6 @@
 package org.books.api;
 
+import org.books.api.errors.NotExhaustiveYear;
 import org.books.api.services.UtilsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Tag("Utils_Service")
@@ -80,4 +82,54 @@ public class UtilsServiceTest {
         }
     }
 
+    @Nested
+    @Tag("year_inferior_or_same_at_now")
+    @DisplayName("Test de la fonction isPublicationYearInPastOrPresent")
+    class YearInferiorOrSameAtNow {
+
+        @Test
+        @DisplayName("Renvoyer vrai si l'année de publication est dans le passé par rapport à la date d'aujourdui")
+        void givenYearInferiorAtNowShouldReturnTrue() {
+            String yearToTest = "2000";
+            String currentYear = "2023";
+
+            boolean result = utilsService.isPublicationYearInPastOrPresent(yearToTest, currentYear);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Renvoyer vrai si l'année de publication est la même date qu'aujourd'hui")
+        void givenYearSameAtNowShouldReturnTrue() {
+            String yearToTest = "2023";
+            String currentYear = "2023";
+
+            boolean result = utilsService.isPublicationYearInPastOrPresent(currentYear, yearToTest);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Renvoyer faux si l'année de publication est supérieur à la date d'aujourd'hui")
+        void givenYearSuperiorAtNowShouldReturnFalse() {
+            String yearToTest = "2024";
+            String currentYear = "2023";
+
+            boolean result = utilsService.isPublicationYearInPastOrPresent(yearToTest, currentYear);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("Renvoyer une erreur si l'année de publication n'est pas une donnée valable")
+        void givenYearNotExhaustiveShouldThrowError() {
+            String yearToTest = "Je ne suis pas une année";
+            String currentYear = "2023";
+
+            RuntimeException exception = assertThrows(NotExhaustiveYear.class,
+                                                      () -> utilsService.isPublicationYearInPastOrPresent(yearToTest,
+                                                                                                          currentYear));
+            assertThat(exception.getMessage()).contains("L'année n'est pas une valeur possible");
+        }
+    }
 }

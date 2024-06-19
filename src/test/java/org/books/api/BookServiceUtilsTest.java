@@ -82,5 +82,7 @@ public class BookServiceUtilsTest {
             boolean result = bookServiceUtils.isAlreadyKnown(bookToAdd, emptyList);
             assertThat(result).isFalse();
         }
+
     }
+
 }

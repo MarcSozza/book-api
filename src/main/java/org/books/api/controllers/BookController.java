@@ -1,6 +1,8 @@
 package org.books.api.controllers;
 
-import org.books.api.BookAlreadyExistException;
+import org.books.api.errors.BookAlreadyExistException;
+import org.books.api.errors.NotExhaustiveYear;
+import org.books.api.errors.YearInTheFuture;
 import org.books.api.models.Book;
 import org.books.api.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,5 +29,15 @@ public class BookController {
     @ExceptionHandler(BookAlreadyExistException.class)
     public ResponseEntity<String> handleExceptionBookAlreadyException(Exception e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(YearInTheFuture.class)
+    public ResponseEntity<String> handleExceptionYearInTheFuture(Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotExhaustiveYear.class)
+    public ResponseEntity<String> handleExceptionNotExhaustiveYear(Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

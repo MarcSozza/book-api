@@ -4,14 +4,18 @@ import org.books.api.models.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.Year;
 import java.util.List;
 
 @Service
 public class BookServiceUtils {
 
-    @Autowired
     private UtilsService utilsService;
+
+    @Autowired
+    public BookServiceUtils(UtilsService utilsService) {
+        this.utilsService = utilsService;
+    }
 
     public boolean isAlreadyKnown(Book bookToAdd, List<Book> books) {
 
@@ -25,6 +29,14 @@ public class BookServiceUtils {
             }
         }
         return false;
+    }
+
+    public boolean isPublicationYearInPastOrPresent(Book bookToAdd) {
+        String curentYear = String.valueOf(Year.now()
+                                               .getValue());
+        String yearToCheck = bookToAdd.getYearOfPublication();
+
+        return utilsService.isPublicationYearInPastOrPresent(yearToCheck, curentYear);
     }
 
 }

@@ -1,13 +1,12 @@
 package org.books.api;
 
+import org.books.api.errors.NotExhaustiveYear;
+import org.books.api.errors.YearInTheFuture;
 import org.books.api.models.Book;
 import org.books.api.repositories.BookRepository;
 import org.books.api.services.BookService;
 import org.books.api.services.BookServiceUtils;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,45 +31,98 @@ public class BookServiceTest {
     @Autowired
     private BookService bookService;
 
+    private Book bookToAdd;
+
     @Nested
     @Tag("verification_creation_livre")
     @DisplayName("Vérification de la création d'un nouveau livre")
     class VerificationCreationLivre {
 
-        @Test
-        @DisplayName("Renvoyer une erreur si le livre à créer est déjà présent")
-        void shouldReturnErrorIfLivreAlreadyExist() {
-            Book book = new Book("Titre 1", "Stephen King", "2002", "peur", "résumé", 542);
-            when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(true);
-
-            RuntimeException value = assertThrows(RuntimeException.class, () -> {
-                bookService.createBook(book);
-            });
-
-            assertThat(value.getMessage()).contains("Book already exists");
-
-            verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
+        @BeforeEach
+        void setup() {
+            bookToAdd = new Book("Titre 1", "Stephen King", "2002", "peur", "résumé", 542);
         }
 
-        @Test
-        @DisplayName("Renvoyer le livre créé en DB si le livre à créer n'est pas présent")
-        void shoulReturnNewLivreIfLivreNotExist() {
-            Book bookToAdd = new Book("Titre 1", "Stephen King", "2002", "peur", "résumé", 542);
-            when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(false);
-            when(bookRepository.save(any(Book.class))).thenReturn(bookToAdd);
+        @Nested
+        @Tag("verification_already_known_book")
+        @DisplayName("Vérification de l'existance du livre")
+        class VerificationAlreadyKnownBook {
+            @Test
+            @DisplayName("Renvoyer le livre créé en DB si le livre à créer n'est pas présent")
+            void shoulReturnNewLivreIfLivreNotExist() {
+                when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(false);
+                when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
+                when(bookRepository.save(any(Book.class))).thenReturn(bookToAdd);
 
-            Book bookAdded = bookService.createBook(bookToAdd);
+                Book bookAdded = bookService.createBook(bookToAdd);
 
-            assertThat(bookAdded.getAuthor()).isEqualTo(bookToAdd.getAuthor());
-            assertThat(bookAdded.getGenre()).isEqualTo(bookToAdd.getGenre());
-            assertThat(bookAdded.getSummary()).isEqualTo(bookToAdd.getSummary());
-            assertThat(bookAdded.getTitle()).isEqualTo(bookToAdd.getTitle());
-            assertThat(bookAdded.getYearOfPublication()).isEqualTo(bookToAdd.getYearOfPublication());
-            assertThat(bookAdded.getPageCount()).isEqualTo(bookToAdd.getPageCount());
+                assertThat(bookAdded.getAuthor()).isEqualTo(bookToAdd.getAuthor());
+                assertThat(bookAdded.getGenre()).isEqualTo(bookToAdd.getGenre());
+                assertThat(bookAdded.getSummary()).isEqualTo(bookToAdd.getSummary());
+                assertThat(bookAdded.getTitle()).isEqualTo(bookToAdd.getTitle());
+                assertThat(bookAdded.getYearOfPublication()).isEqualTo(bookToAdd.getYearOfPublication());
+                assertThat(bookAdded.getPageCount()).isEqualTo(bookToAdd.getPageCount());
 
-            verify(bookRepository, times(1)).save(any(Book.class));
-            verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
+                verify(bookRepository, times(1)).save(any(Book.class));
+                verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
+                verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+            }
+
+            @Test
+            @DisplayName("Renvoyer une erreur si le livre à créer est déjà présent")
+            void shouldReturnErrorIfLivreAlreadyExist() {
+                when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(true);
+                when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
+
+                RuntimeException value = assertThrows(RuntimeException.class, () -> {
+                    bookService.createBook(bookToAdd);
+                });
+
+                assertThat(value.getMessage()).contains("Book already exists");
+
+                verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
+                verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+            }
+
+        }
+
+        @Nested
+        @Tag("year_publication")
+        @DisplayName("Vérification de la cohérence de l'année de publication")
+        class VerificationYearPublication {
+
+            @Test
+            @DisplayName("Si l'année de publication est dans le futur, une erreur doit être remontée")
+            void shouldReturnErrorIfYearPublicationInTheFuture() {
+                when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(false);
+
+                RuntimeException result = assertThrows(YearInTheFuture.class, () -> {
+                    bookService.createBook(bookToAdd);
+                });
+
+                assertThat(result.getMessage()).contains("L'année de publication est dans le futur:");
+
+                verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+            }
+
+            @Test
+            @DisplayName("Si l'année de publication n'est pas valide, une erreur doit être remontée")
+            void shouldReturnErrorIfYearPublicationNotEhaustive() {
+                String errorYear = "Je suis une fausse année";
+                bookToAdd = new Book("Titre 1", "Stephen King", errorYear, "peur", "résumé", 542);
+                when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenThrow(
+                        new NotExhaustiveYear(errorYear));
+                RuntimeException result = assertThrows(NotExhaustiveYear.class, () -> {
+                    bookService.createBook(bookToAdd);
+                });
+
+                assertThat(result.getMessage()).contains("L'année n'est pas une valeur possible. Valeur envoyée: ");
+
+                verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+            }
         }
 
     }
+
+
 }
