@@ -1,7 +1,6 @@
 package org.books.api;
 
-import org.books.api.errors.NotExhaustiveYear;
-import org.books.api.errors.YearInTheFuture;
+import org.books.api.errors.*;
 import org.books.api.models.Book;
 import org.books.api.repositories.BookRepository;
 import org.books.api.services.BookService;
@@ -74,11 +73,11 @@ public class BookServiceTest {
                 when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(true);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
 
-                RuntimeException value = assertThrows(RuntimeException.class, () -> {
+                CustomErrorException value = assertThrows(BookAlreadyExistException.class, () -> {
                     bookService.createBook(bookToAdd);
                 });
 
-                assertThat(value.getMessage()).contains("Book already exists");
+                assertThat(value.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_BOOK_ALREADY_EXIST.getCode());
 
                 verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
@@ -96,11 +95,11 @@ public class BookServiceTest {
             void shouldReturnErrorIfYearPublicationInTheFuture() {
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(false);
 
-                RuntimeException result = assertThrows(YearInTheFuture.class, () -> {
+                CustomErrorException result = assertThrows(YearInTheFuture.class, () -> {
                     bookService.createBook(bookToAdd);
                 });
 
-                assertThat(result.getMessage()).contains("L'année de publication est dans le futur:");
+                assertThat(result.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_YEAR_IN_THE_FUTURE.getCode());
 
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
             }
@@ -112,11 +111,11 @@ public class BookServiceTest {
                 bookToAdd = new Book("Titre 1", "Stephen King", errorYear, "peur", "résumé", 542);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenThrow(
                         new NotExhaustiveYear(errorYear));
-                RuntimeException result = assertThrows(NotExhaustiveYear.class, () -> {
+                CustomErrorException result = assertThrows(NotExhaustiveYear.class, () -> {
                     bookService.createBook(bookToAdd);
                 });
 
-                assertThat(result.getMessage()).contains("L'année n'est pas une valeur possible. Valeur envoyée: ");
+                assertThat(result.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_NOT_EXHAUSTIVE_YEAR.getCode());
 
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
             }

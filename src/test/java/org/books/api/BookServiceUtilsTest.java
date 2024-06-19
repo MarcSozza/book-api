@@ -1,14 +1,19 @@
 package org.books.api;
 
+import org.books.api.errors.CustomErrorException;
+import org.books.api.errors.ErrorCode;
+import org.books.api.errors.NotExhaustiveYear;
 import org.books.api.models.Book;
 import org.books.api.services.BookServiceUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.Year;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Tag("BookServiceUtils_Test")
@@ -19,15 +24,6 @@ public class BookServiceUtilsTest {
 
     private ArrayList<Book> books;
 
-    @BeforeEach
-    public void setUp() {
-        books = new ArrayList<>();
-        books.add(new Book("Titre 1", "John Doe", "2000", "peur", "résumé", 500));
-        books.add(new Book("Titre 2", "Jane Doe", "2002", "Aventure", "résumé", 268));
-        books.add(new Book("Titre 3", "Stephen King", "1986", "Peur", "description", 356));
-        books.add(new Book("Titre 4", "Marc Lévy", "2003", "Romance", "résumé", 245));
-    }
-
     /*
      * Règle métier : Un livre avec le même titre
      *  et le même auteur ne peut pas être ajouté à nouveau.
@@ -37,6 +33,15 @@ public class BookServiceUtilsTest {
     @Tag("verification_livre_à_ajouter")
     @DisplayName("Vérification de l'existance du livre à ajouter dans une liste de livres")
     class CheckExistanceDuLivreDansLaBase {
+
+        @BeforeEach
+        public void setUp() {
+            books = new ArrayList<>();
+            books.add(new Book("Titre 1", "John Doe", "2000", "peur", "résumé", 500));
+            books.add(new Book("Titre 2", "Jane Doe", "2002", "Aventure", "résumé", 268));
+            books.add(new Book("Titre 3", "Stephen King", "1986", "Peur", "description", 356));
+            books.add(new Book("Titre 4", "Marc Lévy", "2003", "Romance", "résumé", 245));
+        }
 
         @Test
         @DisplayName("Si aucun livre n'est trouvé alors renvoie faux")
@@ -83,6 +88,48 @@ public class BookServiceUtilsTest {
             assertThat(result).isFalse();
         }
 
+    }
+
+    @Nested
+    @Tag("verification_annee_publication")
+    @DisplayName("Vérification de l'année de publication du livre à ajouter")
+    class CheckAnneePublicationDuLivre {
+
+        @Test
+        @DisplayName("Si l'année de publication est inférieur à aujourd'hui, alors renvoie vrai")
+        void shouldReturnTrueWhenYearInferiorAtToday() {
+            Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", 452);
+            boolean result = bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd);
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Si l'année de publication correspond à celle d'aujourd'hui, alors renvoie vrai")
+        void shouldReturnTrueWhenYearEqualsAtToday() {
+            Book bookToAdd = new Book("Titre 1", "John Doe", String.valueOf(Year.now()
+                                                                                .getValue()), "peur", "description",
+                                      452);
+            boolean result = bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd);
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Si l'année de publication est supérieur à celle d'aujourd'hui, alors renvoie faux")
+        void shouldReturnFalseWhenYearSuperiorAtToday() {
+            Book bookToAdd = new Book("Titre 1", "John Doe", "3000", "peur", "description", 452);
+            boolean result = bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd);
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("Si l'année de publication n'est pas cohérente, renvoie une erreur")
+        void shouldThrowErrorWhenYearIsNotExhaustive() {
+            Book bookToAdd = new Book("Titre 1", "John Doe", "Je ne suis pas une date", "peur", "description", 452);
+            CustomErrorException exception = assertThrows(NotExhaustiveYear.class, () -> {
+                bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd);
+            });
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_NOT_EXHAUSTIVE_YEAR.getCode());
+        }
     }
 
 }

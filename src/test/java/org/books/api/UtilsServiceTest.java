@@ -1,5 +1,7 @@
 package org.books.api;
 
+import org.books.api.errors.CustomErrorException;
+import org.books.api.errors.ErrorCode;
 import org.books.api.errors.NotExhaustiveYear;
 import org.books.api.services.UtilsService;
 import org.junit.jupiter.api.DisplayName;
@@ -126,10 +128,11 @@ public class UtilsServiceTest {
             String yearToTest = "Je ne suis pas une année";
             String currentYear = "2023";
 
-            RuntimeException exception = assertThrows(NotExhaustiveYear.class,
-                                                      () -> utilsService.isPublicationYearInPastOrPresent(yearToTest,
-                                                                                                          currentYear));
-            assertThat(exception.getMessage()).contains("L'année n'est pas une valeur possible");
+            CustomErrorException exception = assertThrows(NotExhaustiveYear.class,
+                                                          () -> utilsService.isPublicationYearInPastOrPresent(
+                                                                  yearToTest,
+                                                                  currentYear));
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_NOT_EXHAUSTIVE_YEAR.getCode());
         }
     }
 }
