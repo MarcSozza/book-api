@@ -1,7 +1,8 @@
 package org.books.api.services;
 
 import org.books.api.errors.BookAlreadyExistException;
-import org.books.api.errors.UnexpectedNumberOfPage;
+import org.books.api.errors.NotInRangeMaxBook;
+import org.books.api.errors.NotInRangeNumberOfPages;
 import org.books.api.errors.YearInTheFuture;
 import org.books.api.models.Book;
 import org.books.api.repositories.BookRepository;
@@ -28,8 +29,13 @@ public class BookService {
             throw new YearInTheFuture(book);
         }
 
-        if (!bookServiceUtils.isBetweenRangeAuthorized(book)) {
-            throw new UnexpectedNumberOfPage(book);
+        if (!bookServiceUtils.isNumberOfPagesBetweenRange(book)) {
+            throw new NotInRangeNumberOfPages(book);
+        }
+
+        Long numberOfBooksForAuthor = bookRepository.countBooksByAuthor(book.getAuthor());
+        if (bookServiceUtils.isAuthorBookLimitReached(numberOfBooksForAuthor)) {
+            throw new NotInRangeMaxBook(book);
         }
 
         List<Book> books = new ArrayList<>();

@@ -10,8 +10,9 @@ import java.util.List;
 @Service
 public class BookServiceUtils {
 
-    private static final int MAXIMUM = 9999;
-    private static final int MINIMUM = 10;
+    private static final int MAXIMUM_PAGES = 9999;
+    private static final int MINIMUM_PAGES = 10;
+    private static final int MAXIMUM_AUTHOR_BOOKS = 50;
     private UtilsService utilsService;
 
     @Autowired
@@ -20,7 +21,6 @@ public class BookServiceUtils {
     }
 
     public boolean isAlreadyKnown(Book bookToAdd, List<Book> books) {
-
         String author = bookToAdd.getAuthor();
         String title = bookToAdd.getTitle();
 
@@ -37,11 +37,14 @@ public class BookServiceUtils {
         String curentYear = String.valueOf(Year.now()
                                                .getValue());
         String yearToCheck = bookToAdd.getYearOfPublication();
-
-        return utilsService.isPublicationYearInPastOrPresent(yearToCheck, curentYear);
+        return utilsService.isFirstLessOrEqual(yearToCheck, curentYear);
     }
 
-    public boolean isBetweenRangeAuthorized(Book bookToAdd) {
-        return bookToAdd.getPageCount() >= BookServiceUtils.MINIMUM && bookToAdd.getPageCount() <= BookServiceUtils.MAXIMUM;
+    public boolean isNumberOfPagesBetweenRange(Book bookToAdd) {
+        return bookToAdd.getPageCount() >= BookServiceUtils.MINIMUM_PAGES && bookToAdd.getPageCount() <= BookServiceUtils.MAXIMUM_PAGES;
+    }
+
+    public boolean isAuthorBookLimitReached(Long numberOfBooks) {
+        return numberOfBooks >= BookServiceUtils.MAXIMUM_AUTHOR_BOOKS;
     }
 }

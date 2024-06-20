@@ -2,7 +2,7 @@ package org.books.api;
 
 import org.books.api.errors.CustomErrorException;
 import org.books.api.errors.ErrorCode;
-import org.books.api.errors.NotExhaustiveYear;
+import org.books.api.errors.NotExhaustiveNumber;
 import org.books.api.models.Book;
 import org.books.api.services.BookServiceUtils;
 import org.junit.jupiter.api.*;
@@ -125,10 +125,10 @@ public class BookServiceUtilsTest {
         @DisplayName("Si l'année de publication n'est pas cohérente, renvoie une erreur")
         void shouldThrowErrorWhenYearIsNotExhaustive() {
             Book bookToAdd = new Book("Titre 1", "John Doe", "Je ne suis pas une date", "peur", "description", 452);
-            CustomErrorException exception = assertThrows(NotExhaustiveYear.class, () -> {
+            CustomErrorException exception = assertThrows(NotExhaustiveNumber.class, () -> {
                 bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd);
             });
-            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_NOT_EXHAUSTIVE_YEAR.getCode());
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_EXHAUSTIVE_NUMBER.getCode());
         }
     }
 
@@ -142,7 +142,7 @@ public class BookServiceUtilsTest {
         void shouldReturnTrueWhenNumberOfPageBetween10AndLimit() {
             int number = 10;
             Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", number);
-            boolean result = bookServiceUtils.isBetweenRangeAuthorized(bookToAdd);
+            boolean result = bookServiceUtils.isNumberOfPagesBetweenRange(bookToAdd);
             assertThat(result).isTrue();
         }
 
@@ -151,7 +151,7 @@ public class BookServiceUtilsTest {
         void shouldReturnFalseWhenNumberOfPageInferiorAt10() {
             int number = 2;
             Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", number);
-            boolean result = bookServiceUtils.isBetweenRangeAuthorized(bookToAdd);
+            boolean result = bookServiceUtils.isNumberOfPagesBetweenRange(bookToAdd);
             assertThat(result).isFalse();
         }
 
@@ -160,9 +160,30 @@ public class BookServiceUtilsTest {
         void shouldReturnFalseWhenNumberOfPageSuperiorAtLimit() {
             int number = 10000;
             Book bookToAdd = new Book("Titre 1", "John Doe", "2002", "peur", "description", number);
-            boolean result = bookServiceUtils.isBetweenRangeAuthorized(bookToAdd);
+            boolean result = bookServiceUtils.isNumberOfPagesBetweenRange(bookToAdd);
             assertThat(result).isFalse();
         }
     }
 
+    @Nested
+    @Tag("Vérification_nombre_de_livre_auteur")
+    @DisplayName("Vérification du nombre de livre de l'auteur en DB")
+    class CheckNombreDeLivreAuteur {
+
+        @Test
+        @DisplayName("Si le livre à ajouter est dans la limite autorisée, alors renvoie faux")
+        void shouldReturnFalseWhenNumberOfBookBetween0AndLimit() {
+            Long numberOfBooks = 10L;
+            boolean result = bookServiceUtils.isAuthorBookLimitReached(numberOfBooks);
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("Si le livre à ajouter dépasse la limite autorisée, alors renvoie vrai")
+        void shouldReturnTrueWhenNumberOfBooksInTheLimit() {
+            Long numberOfBooks = 200L;
+            boolean result = bookServiceUtils.isAuthorBookLimitReached(numberOfBooks);
+            assertThat(result).isTrue();
+        }
+    }
 }

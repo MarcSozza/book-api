@@ -2,7 +2,7 @@ package org.books.api;
 
 import org.books.api.errors.CustomErrorException;
 import org.books.api.errors.ErrorCode;
-import org.books.api.errors.NotExhaustiveYear;
+import org.books.api.errors.NotExhaustiveNumber;
 import org.books.api.services.UtilsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -95,7 +95,7 @@ public class UtilsServiceTest {
             String yearToTest = "2000";
             String currentYear = "2023";
 
-            boolean result = utilsService.isPublicationYearInPastOrPresent(yearToTest, currentYear);
+            boolean result = utilsService.isFirstLessOrEqual(yearToTest, currentYear);
 
             assertThat(result).isTrue();
         }
@@ -106,7 +106,7 @@ public class UtilsServiceTest {
             String yearToTest = "2023";
             String currentYear = "2023";
 
-            boolean result = utilsService.isPublicationYearInPastOrPresent(currentYear, yearToTest);
+            boolean result = utilsService.isFirstLessOrEqual(currentYear, yearToTest);
 
             assertThat(result).isTrue();
         }
@@ -117,7 +117,7 @@ public class UtilsServiceTest {
             String yearToTest = "2024";
             String currentYear = "2023";
 
-            boolean result = utilsService.isPublicationYearInPastOrPresent(yearToTest, currentYear);
+            boolean result = utilsService.isFirstLessOrEqual(yearToTest, currentYear);
 
             assertThat(result).isFalse();
         }
@@ -128,11 +128,12 @@ public class UtilsServiceTest {
             String yearToTest = "Je ne suis pas une année";
             String currentYear = "2023";
 
-            CustomErrorException exception = assertThrows(NotExhaustiveYear.class,
-                                                          () -> utilsService.isPublicationYearInPastOrPresent(
+            CustomErrorException exception = assertThrows(NotExhaustiveNumber.class,
+                                                          () -> utilsService.isFirstLessOrEqual(
                                                                   yearToTest,
                                                                   currentYear));
-            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_NOT_EXHAUSTIVE_YEAR.getCode());
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_EXHAUSTIVE_NUMBER.getCode());
         }
     }
+
 }

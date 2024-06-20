@@ -1,9 +1,6 @@
 package org.books.api.it;
 
-import org.books.api.errors.BookAlreadyExistException;
-import org.books.api.errors.NotExhaustiveYear;
-import org.books.api.errors.UnexpectedNumberOfPage;
-import org.books.api.errors.YearInTheFuture;
+import org.books.api.errors.*;
 import org.books.api.models.Book;
 import org.books.api.services.BookService;
 import org.junit.jupiter.api.*;
@@ -100,7 +97,7 @@ public class BookControllerTest {
             Book invalidBook = new Book("Title 1", "Stephen King", invalidYear, "horreur", "resume", 520);
 
             Mockito.when(bookService.createBook(invalidBook))
-                   .thenThrow(NotExhaustiveYear.class);
+                   .thenThrow(NotExhaustiveNumber.class);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
@@ -118,7 +115,7 @@ public class BookControllerTest {
             bookToAdd.setPageCount(6);
 
             Mockito.when(bookService.createBook(bookToAdd))
-                   .thenThrow(UnexpectedNumberOfPage.class);
+                   .thenThrow(NotInRangeNumberOfPages.class);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
@@ -129,5 +126,20 @@ public class BookControllerTest {
                    .createBook(bookToAdd);
         }
 
+        @Test
+        @DisplayName("Renvoyer une 400 si le nombre de livre pour un auteur a dépassé la limite autorisé")
+        void givenBookWithInvalidAutorisationShouldReturn400() throws Exception {
+            Mockito.when(bookService.createBook(bookToAdd))
+                   .thenThrow(NotInRangeMaxBook.class);
+
+            mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
+                                                  .content(
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":520}")
+                                                  .contentType(MediaType.APPLICATION_JSON))
+                   .andExpect(status().isBadRequest());
+
+            Mockito.verify(bookService, Mockito.times(1))
+                   .createBook(bookToAdd);
+        }
     }
 }

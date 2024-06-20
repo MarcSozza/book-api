@@ -51,7 +51,9 @@ public class BookServiceTest {
             void shoulReturnNewLivreIfLivreNotExist() {
                 when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(false);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
-                when(bookServiceUtils.isBetweenRangeAuthorized(any(Book.class))).thenReturn(true);
+                when(bookServiceUtils.isNumberOfPagesBetweenRange(any(Book.class))).thenReturn(true);
+                when(bookRepository.countBooksByAuthor(any(String.class))).thenReturn(10L);
+                when(bookServiceUtils.isAuthorBookLimitReached(any(Long.class))).thenReturn(false);
                 when(bookRepository.save(any(Book.class))).thenReturn(bookToAdd);
 
                 Book bookAdded = bookService.createBook(bookToAdd);
@@ -66,7 +68,9 @@ public class BookServiceTest {
                 verify(bookRepository, times(1)).save(any(Book.class));
                 verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
-                verify(bookServiceUtils, times(1)).isBetweenRangeAuthorized(any(Book.class));
+                verify(bookRepository, times(1)).countBooksByAuthor(any(String.class));
+                verify(bookServiceUtils, times(1)).isAuthorBookLimitReached(any(Long.class));
+                verify(bookServiceUtils, times(1)).isNumberOfPagesBetweenRange(any(Book.class));
             }
 
             @Test
@@ -74,13 +78,13 @@ public class BookServiceTest {
             void shouldReturnErrorIfLivreAlreadyExist() {
                 when(bookServiceUtils.isAlreadyKnown(any(Book.class), anyList())).thenReturn(true);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
-                when(bookServiceUtils.isBetweenRangeAuthorized(any(Book.class))).thenReturn(true);
+                when(bookServiceUtils.isNumberOfPagesBetweenRange(any(Book.class))).thenReturn(true);
 
                 CustomErrorException value = assertThrows(BookAlreadyExistException.class, () -> {
                     bookService.createBook(bookToAdd);
                 });
 
-                assertThat(value.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_BOOK_ALREADY_EXIST.getCode());
+                assertThat(value.getErrorCode()).isEqualTo(ErrorCode.BOOK_ALREADY_EXIST.getCode());
 
                 verify(bookServiceUtils, times(1)).isAlreadyKnown(any(Book.class), anyList());
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
@@ -102,7 +106,7 @@ public class BookServiceTest {
                     bookService.createBook(bookToAdd);
                 });
 
-                assertThat(result.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_YEAR_IN_THE_FUTURE.getCode());
+                assertThat(result.getErrorCode()).isEqualTo(ErrorCode.YEAR_IN_THE_FUTURE.getCode());
 
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
             }
@@ -113,12 +117,12 @@ public class BookServiceTest {
                 String errorYear = "Je suis une fausse année";
                 bookToAdd = new Book("Titre 1", "Stephen King", errorYear, "peur", "résumé", 542);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenThrow(
-                        new NotExhaustiveYear(errorYear));
-                CustomErrorException result = assertThrows(NotExhaustiveYear.class, () -> {
+                        new NotExhaustiveNumber(errorYear));
+                CustomErrorException result = assertThrows(NotExhaustiveNumber.class, () -> {
                     bookService.createBook(bookToAdd);
                 });
 
-                assertThat(result.getErrorCode()).isEqualTo(ErrorCode.ERROR_CODE_NOT_EXHAUSTIVE_YEAR.getCode());
+                assertThat(result.getErrorCode()).isEqualTo(ErrorCode.NOT_EXHAUSTIVE_NUMBER.getCode());
 
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
             }
@@ -133,27 +137,54 @@ public class BookServiceTest {
             void shouldReturnErrorIfPageSizeInferiorAtMinimum() {
                 bookToAdd.setPageCount(9);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd)).thenReturn(true);
-                when(bookServiceUtils.isBetweenRangeAuthorized(bookToAdd)).thenReturn(false);
-                CustomErrorException exception = assertThrows(UnexpectedNumberOfPage.class,
+                when(bookServiceUtils.isNumberOfPagesBetweenRange(bookToAdd)).thenReturn(false);
+                CustomErrorException exception = assertThrows(NotInRangeNumberOfPages.class,
                                                               () -> bookService.createBook(bookToAdd));
                 assertThat(exception.getErrorCode()).isEqualTo(
-                        ErrorCode.ERROR_CODE_UNEXPECTED_NUMBER_OF_PAGE.getCode());
+                        ErrorCode.NOT_IN_THE_RANGE_NUMBER_OF_PAGE.getCode());
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
-                verify(bookServiceUtils, times(1)).isBetweenRangeAuthorized(bookToAdd);
+                verify(bookServiceUtils, times(1)).isNumberOfPagesBetweenRange(bookToAdd);
             }
 
             @Test
             @DisplayName("Si le livre à ajouter à un nombre de page supérieur à la limite, renvoie une erreur")
             void shouldReturnErrorIfPageSizeSuperiorAtMaximum() {
                 bookToAdd.setPageCount(999999);
-                when(bookServiceUtils.isBetweenRangeAuthorized(bookToAdd)).thenReturn(false);
+                when(bookServiceUtils.isNumberOfPagesBetweenRange(bookToAdd)).thenReturn(false);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(bookToAdd)).thenReturn(true);
-                CustomErrorException exception = assertThrows(UnexpectedNumberOfPage.class,
+                CustomErrorException exception = assertThrows(NotInRangeNumberOfPages.class,
                                                               () -> bookService.createBook(bookToAdd));
                 assertThat(exception.getErrorCode()).isEqualTo(
-                        ErrorCode.ERROR_CODE_UNEXPECTED_NUMBER_OF_PAGE.getCode());
-                verify(bookServiceUtils, times(1)).isBetweenRangeAuthorized(bookToAdd);
+                        ErrorCode.NOT_IN_THE_RANGE_NUMBER_OF_PAGE.getCode());
+                verify(bookServiceUtils, times(1)).isNumberOfPagesBetweenRange(bookToAdd);
                 verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(bookToAdd);
+            }
+        }
+
+        @Nested
+        @Tag("verification_nombre_livre_auteur")
+        @DisplayName("Vérification du nombre de livre de l'auteur")
+        class VerificationNombreLivreAuteur {
+
+            @Test
+            @DisplayName("Si le livre à ajouter dépasse la limite autorisée pour un auteur, renvoie une erreur")
+            void shouldReturnErrorIfNumberOfBookReachMaxAutorized() {
+                Long numberOfPage = 95L;
+                when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenReturn(true);
+                when(bookServiceUtils.isNumberOfPagesBetweenRange(any(Book.class))).thenReturn(true);
+                when(bookRepository.countBooksByAuthor(any(String.class))).thenReturn(numberOfPage);
+                when(bookServiceUtils.isAuthorBookLimitReached(numberOfPage)).thenReturn(true);
+
+                CustomErrorException exception = assertThrows(NotInRangeMaxBook.class,
+                                                              () -> bookService.createBook(bookToAdd));
+
+                assertThat(exception.getErrorCode()).isEqualTo(
+                        ErrorCode.NOT_IN_THE_RANGE_MAX_BOOK.getCode());
+
+                verify(bookServiceUtils, times(1)).isPublicationYearInPastOrPresent(any(Book.class));
+                verify(bookServiceUtils, times(1)).isNumberOfPagesBetweenRange(any(Book.class));
+                verify(bookRepository, times(1)).countBooksByAuthor(any(String.class));
+                verify(bookServiceUtils, times(1)).isAuthorBookLimitReached(numberOfPage);
             }
         }
 
