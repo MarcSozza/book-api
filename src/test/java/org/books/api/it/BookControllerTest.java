@@ -1,5 +1,6 @@
 package org.books.api.it;
 
+import org.books.api.enums.Genre;
 import org.books.api.errors.*;
 import org.books.api.models.Book;
 import org.books.api.services.BookService;
@@ -33,7 +34,7 @@ public class BookControllerTest {
 
         @BeforeEach
         void setup() {
-            bookToAdd = new Book("Title 1", "Stephen King", "2000", "horreur", "resume", 520);
+            bookToAdd = new Book("Title 1", "Stephen King", "2000", Genre.HISTORICAL, "resume", 520);
         }
 
         @Test
@@ -44,7 +45,7 @@ public class BookControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
-                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":520}")
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"HISTORICAL\",\"summary\":\"resume\",\"pageCount\":520}")
                                                   .contentType(
                                                           MediaType.APPLICATION_JSON))
                    .andExpect(status().isCreated());
@@ -61,7 +62,7 @@ public class BookControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
-                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":520}")
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"HISTORICAL\",\"summary\":\"resume\",\"pageCount\":520}")
                                                   .contentType(
                                                           MediaType.APPLICATION_JSON))
                    .andExpect(status().isConflict());
@@ -74,14 +75,14 @@ public class BookControllerTest {
         @Test
         @DisplayName("Renvoyer une 400 si l'année du livre à créer est supérieur à la date d'aujourd'hui")
         void givenBookWithFutureDateShouldReturn400() throws Exception {
-            bookToAdd = new Book("Title 1", "Stephen King", "2040", "horreur", "resume", 520);
+            bookToAdd = new Book("Title 1", "Stephen King", "2040", Genre.FICTION, "resume", 520);
 
             Mockito.when(bookService.createBook(any(Book.class)))
                    .thenThrow(YearInTheFuture.class);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
-                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2040\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":520}")
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2040\",\"genre\":\"FICTION\",\"summary\":\"resume\",\"pageCount\":520}")
                                                   .contentType(
                                                           MediaType.APPLICATION_JSON))
                    .andExpect(status().isBadRequest());
@@ -94,14 +95,14 @@ public class BookControllerTest {
         @DisplayName("Renvoyer une 400 si l'année du livre à créer n'est pas une date valide")
         void givenBookWithInvalidDateShouldReturn400() throws Exception {
             String invalidYear = "Je ne suis pas une année";
-            Book invalidBook = new Book("Title 1", "Stephen King", invalidYear, "horreur", "resume", 520);
+            Book invalidBook = new Book("Title 1", "Stephen King", invalidYear, Genre.SCIENCE_FICTION, "resume", 520);
 
             Mockito.when(bookService.createBook(invalidBook))
                    .thenThrow(NotExhaustiveNumber.class);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
-                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"Je ne suis pas une année\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":520}")
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"Je ne suis pas une année\",\"genre\":\"SCIENCE_FICTION\",\"summary\":\"resume\",\"pageCount\":520}")
                                                   .contentType(MediaType.APPLICATION_JSON))
                    .andExpect(status().isBadRequest());
 
@@ -119,7 +120,7 @@ public class BookControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
-                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":6}")
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"HISTORICAL\",\"summary\":\"resume\",\"pageCount\":6}")
                                                   .contentType(MediaType.APPLICATION_JSON))
                    .andExpect(status().isBadRequest());
             Mockito.verify(bookService, Mockito.times(1))
@@ -134,7 +135,7 @@ public class BookControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/books/book")
                                                   .content(
-                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"horreur\",\"summary\":\"resume\",\"pageCount\":520}")
+                                                          "{\"title\":\"Title 1\",\"author\":\"Stephen King\",\"yearOfPublication\":\"2000\",\"genre\":\"HISTORICAL\",\"summary\":\"resume\",\"pageCount\":520}")
                                                   .contentType(MediaType.APPLICATION_JSON))
                    .andExpect(status().isBadRequest());
 

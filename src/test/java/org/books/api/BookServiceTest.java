@@ -1,5 +1,6 @@
 package org.books.api;
 
+import org.books.api.enums.Genre;
 import org.books.api.errors.*;
 import org.books.api.models.Book;
 import org.books.api.repositories.BookRepository;
@@ -39,7 +40,7 @@ public class BookServiceTest {
 
         @BeforeEach
         void setup() {
-            bookToAdd = new Book("Titre 1", "Stephen King", "2002", "peur", "résumé", 542);
+            bookToAdd = new Book("Titre 1", "Stephen King", "2002", Genre.FANTASY, "résumé", 542);
         }
 
         @Nested
@@ -115,7 +116,7 @@ public class BookServiceTest {
             @DisplayName("Si l'année de publication n'est pas valide, une erreur doit être remontée")
             void shouldReturnErrorIfYearPublicationNotEhaustive() {
                 String errorYear = "Je suis une fausse année";
-                bookToAdd = new Book("Titre 1", "Stephen King", errorYear, "peur", "résumé", 542);
+                bookToAdd = new Book("Titre 1", "Stephen King", errorYear, Genre.ROMANCE, "résumé", 542);
                 when(bookServiceUtils.isPublicationYearInPastOrPresent(any(Book.class))).thenThrow(
                         new NotExhaustiveNumber(errorYear));
                 CustomErrorException result = assertThrows(NotExhaustiveNumber.class, () -> {
